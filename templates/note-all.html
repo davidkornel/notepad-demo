@@ -1,3 +1,5 @@
+{{ template "start.html" .}}
+
 <h1>{{ .title }}</h1>
 
 {{ if .ErrorTitle}}
@@ -9,35 +11,18 @@
 <div class="row">
     {{ range .notes }}
     <div class="col-12 mb-3">
-        <div class="card plant-id" data-plant-id="{{ .PlantId }}">
-            <h2 class="card-header">{{ .Name }}</h2>
+        <div class="card plant-id" data-plant-id="{{ .NoteID }}">
+            <h2 class="card-header">{{ .Title }}</h2>
             <div class="card-body">
                 <div class="row">
                     <div class="col rounded border" style="border: lightgreen">
-                        <h5 class="col rounded mb-3" style="background-color: lightgreen ">Configuration</h5>
                         <ul>
                             <li >
-                                Temperature: <span class="data-temp">{{ .Measurement.Temperature }}</span> ˚C
+                                Text: <span class="data-temp">{{ .Text }}</span>
                                 <div class="display-edit" style="display: none">
-                                    <label for="reqtemp">Required Temperature [˚C]</label>
+                                    <label for="reqtemp">Edited text:</label>
                                     <input type="range" class="form-control temp-val" id="reqtemp" name="reqtemp" min="10" max="40" oninput="this.nextElementSibling.value = this.value">
-                                    <output class="display-temp">24</output>
-                                </div>
-                            </li>
-                            <li>
-                                Moisture: <span class="data-moist">{{ .Measurement.Moisture }}</span>  %
-                                <div class="display-edit" style="display: none">
-                                    <label for="reqmoist">Required Moisture [%]</label>
-                                    <input type="range" class="form-control moist-val" id="reqmoist" name="reqmoist" min="0" max="100" oninput="this.nextElementSibling.value = this.value">
-                                    <output class="display-moist">50</output>
-                                </div>
-                            </li>
-                            <li>
-                                Light: <span class="data-light">{{ .Measurement.Light }}</span> L
-                                <div class="display-edit" style="display: none">
-                                    <label for="reqlight">Required Light [L]</label>
-                                    <input type="range" class="form-control light-val" id="reqlight" name="reqlight" min="5000" max="10000" oninput="this.nextElementSibling.value = this.value">
-                                    <output class="display-light">7500</output>
+                                    <output class="display-temp">{{ .Text }}</output>
                                 </div>
                             </li>
                         </ul>
@@ -48,18 +33,14 @@
                     </div>
                     <div class="col rounded border" style="border: lightblue">
                         <h5 class="col rounded mb-3" style="background-color: lightblue ">Current values</h5>
-                        <ul data-plantid="{{ .PlantId }}">
+                        <ul data-plantid="{{ .NoteID }}">
                             <li>
-                                Currently measured temperature: <span class="data-temp-current" >{{ .SimPlant.CurrentTemp }}</span> ˚C
+                                Group: <span class="data-temp-current" >{{ .GroupID }}</span>
                                 <span class="data-temp-current-text"></span>
                             </li>
                             <li>
-                                Currently measured moisture: <span class="data-moist-current" data-plantid="{{ .PlantId }}">{{ .SimPlant.CurrentMoist }}</span>  %
-                                <span class="data-moist-current-text"></span>
-                            </li>
-                            <li>
-                                Currently measured light: <span class="data-light-current" data-plantid="{{ .PlantId }}">{{ .SimPlant.CurrentLight }}</span> L
-                                <span class="data-light-current-text"></span>
+                                Text: <span class="data-temp-current" >{{ .Text }}</span>
+                                <span class="data-temp-current-text"></span>
                             </li>
                         </ul>
                     </div>
@@ -69,3 +50,19 @@
     </div>
     {{ end }}
 </div>
+
+<script>
+    $(() => {
+        $('.btn-measurement-edit').on('click', function () {
+            let $element = $(this);
+            console.log("asd")
+
+            $element.parent().find('.display-edit').show()
+            $element.parent().find('.btn-measurement-save').show()
+            $element.parent().find('.btn-measurement-cancel').show()
+            $element.parent().find('.btn-measurement-delete').show()
+
+            $element.hide();
+        })
+    });
+</script>

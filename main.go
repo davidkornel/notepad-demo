@@ -11,6 +11,7 @@ func main() {
 	setupLog := logger.WithName("setupLog")
 	router := gin.Default()
 
+	router.LoadHTMLGlob("templates/*.html")
 	router.Static("/assets", "./assets")
 
 	router.GET("/ping", func(c *gin.Context) {

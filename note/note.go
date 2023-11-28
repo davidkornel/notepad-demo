@@ -1,6 +1,10 @@
 package note
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/davidkornel/notepad-demo/view"
+	"github.com/gin-gonic/gin"
+	uuid "github.com/satori/go.uuid"
+)
 
 func RegisterRoutes(router *gin.Engine) {
 
@@ -16,8 +20,18 @@ func RegisterRoutes(router *gin.Engine) {
 }
 
 func showAllNotes(c *gin.Context) {
-	var notes []Note
+	var notes []RenderNote
 
-	notes = append(notes, demoNote)
+	notes = append(notes, RenderNote{
+		GroupID: uuid.NewV4().String(),
+		NoteID:  uuid.NewV4().String(),
+		Title:   "Note",
+		Text:    "Blandit tempus porttitor aasfs. Integer posuere erat a ante venenatis.",
+	})
+
+	view.Render(c, gin.H{
+		"title": "demo",
+		"notes": notes,
+	}, "note-all.html")
 
 }
