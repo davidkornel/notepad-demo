@@ -10,6 +10,8 @@ func main() {
 	setupLog := logger.WithName("setupLog")
 	router := gin.Default()
 
+	router.Static("/assets", "./assets")
+
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
