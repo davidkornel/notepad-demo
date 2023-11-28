@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/davidkornel/notepad-demo/note"
 	"github.com/gin-gonic/gin"
 	"github.com/go-logr/logr"
 )
@@ -17,6 +18,9 @@ func main() {
 			"message": "pong",
 		})
 	})
+
+	note.RegisterRoutes(router)
+
 	err := router.Run()
 	if err != nil {
 		return

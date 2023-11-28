@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-logr/logr v1.3.0
+	github.com/satori/go.uuid v1.2.0
 )
 
 require (

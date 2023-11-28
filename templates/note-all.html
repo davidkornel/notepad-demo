@@ -1,0 +1,71 @@
+<h1>{{ .title }}</h1>
+
+{{ if .ErrorTitle}}
+<p class="bg-danger">
+    {{.ErrorTitle}}: {{.ErrorMessage}}
+</p>
+{{end}}
+
+<div class="row">
+    {{ range .notes }}
+    <div class="col-12 mb-3">
+        <div class="card plant-id" data-plant-id="{{ .PlantId }}">
+            <h2 class="card-header">{{ .Name }}</h2>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col rounded border" style="border: lightgreen">
+                        <h5 class="col rounded mb-3" style="background-color: lightgreen ">Configuration</h5>
+                        <ul>
+                            <li >
+                                Temperature: <span class="data-temp">{{ .Measurement.Temperature }}</span> ˚C
+                                <div class="display-edit" style="display: none">
+                                    <label for="reqtemp">Required Temperature [˚C]</label>
+                                    <input type="range" class="form-control temp-val" id="reqtemp" name="reqtemp" min="10" max="40" oninput="this.nextElementSibling.value = this.value">
+                                    <output class="display-temp">24</output>
+                                </div>
+                            </li>
+                            <li>
+                                Moisture: <span class="data-moist">{{ .Measurement.Moisture }}</span>  %
+                                <div class="display-edit" style="display: none">
+                                    <label for="reqmoist">Required Moisture [%]</label>
+                                    <input type="range" class="form-control moist-val" id="reqmoist" name="reqmoist" min="0" max="100" oninput="this.nextElementSibling.value = this.value">
+                                    <output class="display-moist">50</output>
+                                </div>
+                            </li>
+                            <li>
+                                Light: <span class="data-light">{{ .Measurement.Light }}</span> L
+                                <div class="display-edit" style="display: none">
+                                    <label for="reqlight">Required Light [L]</label>
+                                    <input type="range" class="form-control light-val" id="reqlight" name="reqlight" min="5000" max="10000" oninput="this.nextElementSibling.value = this.value">
+                                    <output class="display-light">7500</output>
+                                </div>
+                            </li>
+                        </ul>
+                        <button class="btn btn-primary btn-measurement-edit">Edit</button>
+                        <button class="btn btn-primary btn-measurement-save" style="display: none">Save</button>
+                        <button class="btn btn-primary btn-measurement-cancel" style="display: none">Cancel</button>
+                        <button class="btn btn-primary btn-measurement-delete" style="display: none">Delete</button>
+                    </div>
+                    <div class="col rounded border" style="border: lightblue">
+                        <h5 class="col rounded mb-3" style="background-color: lightblue ">Current values</h5>
+                        <ul data-plantid="{{ .PlantId }}">
+                            <li>
+                                Currently measured temperature: <span class="data-temp-current" >{{ .SimPlant.CurrentTemp }}</span> ˚C
+                                <span class="data-temp-current-text"></span>
+                            </li>
+                            <li>
+                                Currently measured moisture: <span class="data-moist-current" data-plantid="{{ .PlantId }}">{{ .SimPlant.CurrentMoist }}</span>  %
+                                <span class="data-moist-current-text"></span>
+                            </li>
+                            <li>
+                                Currently measured light: <span class="data-light-current" data-plantid="{{ .PlantId }}">{{ .SimPlant.CurrentLight }}</span> L
+                                <span class="data-light-current-text"></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{ end }}
+</div>
