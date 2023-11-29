@@ -8,61 +8,215 @@
 </p>
 {{end}}
 
+<style>
+    body {font-family: Arial, Helvetica, sans-serif;}
+    * {box-sizing: border-box;}
+
+    /* Button used to open the contact form - fixed at the bottom of the page */
+    .open-button {
+        background-color: #555;
+        color: white;
+        padding: 16px 20px;
+        border: none;
+        cursor: pointer;
+        opacity: 0.8;
+        position: fixed;
+        bottom: 23px;
+        right: 40px;
+        width: 280px;
+    }
+
+    /* The popup form - hidden by default */
+    .form-popup {
+        display: none;
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        border: 3px solid #f1f1f1;
+        width: 400px;
+        z-index: 9;
+    }
+
+    /* Add styles to the form container */
+    .form-container {
+        max-width: 400px;
+        padding: 10px;
+        background-color: white;
+    }
+
+    /* Full-width input fields */
+    .form-container textarea[type=text] {
+        width: 100%;
+        padding: 15px;
+        margin: 5px 0 22px 0;
+        border: none;
+        background: #f1f1f1;
+    }
+
+    /* When the inputs get focus, do something */
+    .form-container textarea[type=text]:focus{
+        background-color: #ddd;
+        outline: none;
+    }
+
+    /* Set a style for the submit/login button */
+    .form-container .btn {
+        background-color: #04AA6D;
+        color: white;
+        padding: 16px 20px;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        margin-bottom:10px;
+        opacity: 0.8;
+    }
+
+    /* Add a red background color to the cancel button */
+    .form-container .cancel {
+        background-color: red;
+    }
+
+    /* Add some hover effects to buttons */
+    .form-container .btn:hover, .open-button:hover {
+        opacity: 1;
+    }
+</style>
+
 <div class="row">
-    {{ range .notes }}
-    <div class="col-12 mb-3">
-        <div class="card plant-id" data-plant-id="{{ .NoteID }}">
-            <h2 class="card-header">{{ .Title }}</h2>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col rounded border" style="border: lightgreen">
-                        <ul>
-                            <li >
-                                Text: <span class="data-temp">{{ .Text }}</span>
-                                <div class="display-edit" style="display: none">
-                                    <label for="reqtemp">Edited text:</label>
-                                    <input type="range" class="form-control temp-val" id="reqtemp" name="reqtemp" min="10" max="40" oninput="this.nextElementSibling.value = this.value">
-                                    <output class="display-temp">{{ .Text }}</output>
-                                </div>
-                            </li>
-                        </ul>
-                        <button class="btn btn-primary btn-measurement-edit">Edit</button>
-                        <button class="btn btn-primary btn-measurement-save" style="display: none">Save</button>
-                        <button class="btn btn-primary btn-measurement-cancel" style="display: none">Cancel</button>
-                        <button class="btn btn-primary btn-measurement-delete" style="display: none">Delete</button>
-                    </div>
-                    <div class="col rounded border" style="border: lightblue">
-                        <h5 class="col rounded mb-3" style="background-color: lightblue ">Current values</h5>
-                        <ul data-plantid="{{ .NoteID }}">
-                            <li>
-                                Group: <span class="data-temp-current" >{{ .GroupID }}</span>
-                                <span class="data-temp-current-text"></span>
-                            </li>
-                            <li>
-                                Text: <span class="data-temp-current" >{{ .Text }}</span>
-                                <span class="data-temp-current-text"></span>
-                            </li>
-                        </ul>
+    <button class="open-button" onclick="openAddNotePopup()">Add note</button>
+
+    <div class=" rounded border form-popup form-container" id="addNoteForm" style="border: lightblue">
+        <button onclick="closeAddNotePopup()" class="btn cancel">Close</button>
+        <h5 class="col rounded mb-3" style="background-color: lightblue ">Add note</h5>
+        <label><b>Title</b></label>
+        <textarea class="new-note-title" rows="1" cols="30" type="text" maxlength="30" placeholder="Note title" required></textarea>
+        <label><b>Group</b></label>
+        <textarea class="new-note-group" rows="1" cols="30" type="text" maxlength="30" placeholder="Note group" required></textarea>
+        <label><b>Text</b></label>
+        <textarea class="new-note-text" rows="3" cols="50" type="text" placeholder="Note text" required></textarea>
+        <button class="btn btn-add-new-note">Add</button>
+    </div>
+    <ol>
+        {{ range .notes }}
+        <div class="col-12 mb-3">
+            <div class="card note-id" data-note-id="{{ .NoteID }}">
+                <h2 class="card-header">{{ .Title }}</h2>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col rounded border" style="border: lightblue">
+                            <h5 class="col rounded mb-3" style="background-color: lightblue ">Current values</h5>
+                            <ul data-note-id="{{ .NoteID }}">
+                                <li>
+                                    Group: <span class="data-temp-current" >{{ .GroupID }}</span>
+                                    <span class="data-temp-current-text"></span>
+                                </li>
+                                <li>
+                                    Text: <label>
+                                    <textarea class="data-text" rows="2" cols="50"  disabled>{{ .Text }}</textarea>
+                                </label>
+                                </li>
+                            </ul>
+                            <button class="btn btn-primary btn-measurement-edit">Edit</button>
+                            <button class="btn btn-primary btn-measurement-save" style="display: none">Save</button>
+                            <button class="btn btn-primary btn-measurement-cancel" style="display: none">Cancel</button>
+                            <button class="btn btn-primary btn-measurement-delete" style="display: none">Delete</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    {{ end }}
+        {{ end }}
+    </ol>
+
+
 </div>
 
 <script>
-    $(() => {
+
+    function openAddNotePopup() {
+        document.getElementById("addNoteForm").style.display = "block"
+    }
+
+    function closeAddNotePopup() {
+        document.getElementById("addNoteForm").style.display = "none"
+    }
+
+
+$(() => {
         $('.btn-measurement-edit').on('click', function () {
             let $element = $(this);
-            console.log("asd")
 
             $element.parent().find('.display-edit').show()
             $element.parent().find('.btn-measurement-save').show()
             $element.parent().find('.btn-measurement-cancel').show()
             $element.parent().find('.btn-measurement-delete').show()
+            $('.data-text').prop('disabled', false)
 
             $element.hide();
+        })
+
+    $('.btn-add-new-note').on('click', function () {
+            let $element = $(this);
+
+
+            let titleValue = $element.parent().find('.new-note-title').val()
+            let groupValue = $element.parent().find('.new-note-group').val()
+            let textValue = $element.parent().find('.new-note-text').val()
+
+            console.log("title", titleValue)
+            console.log("group", groupValue)
+            console.log("text", textValue)
+
+            $.ajax({
+                url: "/note/create",
+                type: "POST",
+                data: JSON.stringify({
+                    title: titleValue,
+                    group: groupValue,
+                    text: textValue
+                }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data, status){
+                    $('p').append('status: ' + status + ', data: ' + data)
+                    console.log(data)
+
+                    let newNoteHTML = `
+                        <div class="col-12 mb-3">
+                            <div class="card note-id" data-note-id="${data.noteid}">
+                                <h2 class="card-header">${data.title}</h2>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col rounded border" style="border: lightblue">
+                                            <h5 class="col rounded mb-3" style="background-color: lightblue ">Current values</h5>
+                                            <ul data-note-id="${data.noteid}">
+                                                <li>
+                                                    Group: <span class="data-temp-current">${data.group}</span>
+                                                    <span class="data-temp-current-text"></span>
+                                                </li>
+                                                <li>
+                                                    Text: <label>
+                                                        <textarea class="data-text" rows="2" cols="50" disabled>${data.text}</textarea>
+                                                    </label>
+                                                </li>
+                                            </ul>
+                                            <button class="btn btn-primary btn-measurement-edit">Edit</button>
+                                            <button class="btn btn-primary btn-measurement-save" style="display: none">Save</button>
+                                            <button class="btn btn-primary btn-measurement-cancel" style="display: none">Cancel</button>
+                                            <button class="btn btn-primary btn-measurement-delete" style="display: none">Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                    $("ol").append(newNoteHTML);
+                },
+                complete: function () {
+                    closeAddNotePopup()
+                },
+                error: function(jqxhr, settings, ex) { alert('failed, ' + ex); }
+            })
         })
     });
 </script>

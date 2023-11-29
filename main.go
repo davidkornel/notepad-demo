@@ -20,7 +20,9 @@ func main() {
 		})
 	})
 
-	note.RegisterRoutes(router)
+	noteRoute := note.NewRoutes(logger)
+
+	noteRoute.RegisterRoutes(router)
 
 	err := router.Run()
 	if err != nil {

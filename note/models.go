@@ -4,14 +4,11 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-//var (
-//	demoNote = Note{
-//		GroupID: uuid.UUID{},
-//		NoteID:  uuid.UUID{},
-//		Title:   "Note",
-//		Text:    "Text",
-//	}
-//)
+type POSTData struct {
+	Title string `json:"title"`
+	Group string `json:"group"`
+	Text  string `json:"text"`
+}
 
 type Note struct {
 	GroupID uuid.UUID `bson:"groupid"`
