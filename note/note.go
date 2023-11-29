@@ -52,16 +52,17 @@ func (r *Routes) createNote(c *gin.Context) {
 		"groupid": groupID.String(),
 	}
 
-	log.Info("new note received", "note", payload)
-
 	//saveNote
 
 	view.Render(c, gin.H{
 		"payload": payload,
 	}, "")
+	log.Info("new note received", "note", payload)
 }
 
 func (r *Routes) showAllNotes(c *gin.Context) {
+	log := r.logger.WithName("showAllNotes")
+
 	var notes []RenderNote
 
 	notes = append(notes, RenderNote{
@@ -70,10 +71,9 @@ func (r *Routes) showAllNotes(c *gin.Context) {
 		Title:   "Note",
 		Text:    "Blandit tempus porttitor aasfs. Integer posuere erat a ante venenatis.",
 	})
-
 	view.Render(c, gin.H{
 		"title": "demo",
 		"notes": notes,
 	}, "note-all.html")
-
+	log.V(1).Info("notes have been fetched", "notes", notes)
 }
