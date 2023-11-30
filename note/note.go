@@ -5,16 +5,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-logr/logr"
 	uuid "github.com/satori/go.uuid"
+	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 )
 
 type Routes struct {
-	logger logr.Logger
+	dbClient mongo.Client
+	logger   logr.Logger
 }
 
-func NewRoutes(l logr.Logger) *Routes {
+func NewRoutes(l logr.Logger, client *mongo.Client) *Routes {
 	return &Routes{
-		logger: l,
+		dbClient: *client,
+		logger:   l,
 	}
 }
 
@@ -43,16 +46,15 @@ func (r *Routes) createNote(c *gin.Context) {
 	}
 
 	noteID := uuid.NewV4()
-	groupID := uuid.NewV4()
-	payload := map[string]string{
-		"title":   noteData.Title,
-		"group":   noteData.Group,
-		"text":    noteData.Text,
-		"noteid":  noteID.String(),
-		"groupid": groupID.String(),
+
+	newNote := POSTData2Note(noteID, noteData)
+	//saveNote
+	err := r.saveNoteIntoDB(newNote)
+	if err != nil {
+		return
 	}
 
-	//saveNote
+	payload := note2Map(newNote)
 
 	view.Render(c, gin.H{
 		"payload": payload,
@@ -66,10 +68,10 @@ func (r *Routes) showAllNotes(c *gin.Context) {
 	var notes []RenderNote
 
 	notes = append(notes, RenderNote{
-		GroupID: uuid.NewV4().String(),
-		NoteID:  uuid.NewV4().String(),
-		Title:   "Note",
-		Text:    "Blandit tempus porttitor aasfs. Integer posuere erat a ante venenatis.",
+		Group:  "testgroup",
+		NoteID: uuid.NewV4().String(),
+		Title:  "Note",
+		Text:   "Blandit tempus porttitor aasfs. Integer posuere erat a ante venenatis.",
 	})
 	view.Render(c, gin.H{
 		"title": "demo",
