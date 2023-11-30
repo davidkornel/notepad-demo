@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/davidkornel/notepad-demo/config"
+	uuid "github.com/satori/go.uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -66,5 +67,21 @@ func (r *Routes) editNoteInDB(note Note) error {
 		log.Info("upserted a new note", "id", note.NoteID, "title", note.Title)
 	}
 
+	return nil
+}
+
+func (r *Routes) deleteNoteFromDB(id uuid.UUID) error {
+	log := r.logger.WithName("deleteNoteFromDB")
+
+	log.Info("Trying to delete note from database", "noteid", id.String())
+	coll := r.dbClient.Database(config.DefaultDatabaseTableName).Collection(config.DefaultDatabaseNoteCollectionName)
+
+	result, err := coll.DeleteOne(context.TODO(), bson.D{{"noteid", id}})
+	if err != nil {
+		return err
+	}
+	if result.DeletedCount == 1 {
+		log.V(1).Info("Successfully deleted note")
+	}
 	return nil
 }

@@ -29,10 +29,26 @@ func (r *Routes) RegisterRoutes(router *gin.Engine) {
 		noteRoutes.POST("/create", r.createNote)
 		//noteRoutes.GET("/view/:id", viewNote)
 		noteRoutes.POST("/edit/:id", r.editNote)
-		//noteRoutes.DELETE("/delete/:id", deleteNote)
+		noteRoutes.DELETE("/delete/:id", r.deleteNote)
 	}
 	r.logger.WithName("RegisterRoutes").V(1).Info("routes registered for /note")
 
+}
+
+func (r *Routes) deleteNote(c *gin.Context) {
+	log := r.logger.WithName("deleteNote")
+
+	id, err := uuid.FromString(c.Param("id"))
+	if err != nil {
+		log.Error(err, "error happened while fetching id")
+	}
+	log.Info("NoteID fetched from url", "noteid", id.String())
+	log.V(1).Info("Trying to delete note", "noteid", id.String())
+
+	if err = r.deleteNoteFromDB(id); err != nil {
+		log.Error(err, "error happened while updating note in DB")
+		return
+	}
 }
 
 func (r *Routes) editNote(c *gin.Context) {
@@ -43,7 +59,7 @@ func (r *Routes) editNote(c *gin.Context) {
 		log.Error(err, "error happened while fetching id")
 	}
 	log.Info("NoteID fetched from url", "noteid", id.String())
-
+	log.V(1).Info("Trying to update note", "noteid", id.String())
 	var noteData POSTData
 
 	if err := c.ShouldBindJSON(&noteData); err != nil {
@@ -58,6 +74,7 @@ func (r *Routes) editNote(c *gin.Context) {
 		log.Error(err, "error happened while updating note in DB")
 		return
 	}
+	log.Info("Successfully updated note", "id", note.NoteID.String())
 	payload := note2Map(note)
 
 	view.Render(c, gin.H{

@@ -126,10 +126,6 @@
 
 <script>
 
-    // function editBtnclick() {
-    //
-    // }
-
     function openAddNotePopup() {
         document.getElementById("addNoteForm").style.display = "block"
     }
@@ -200,7 +196,25 @@ $(() => {
             },
             error: function(jqxhr, settings, ex) { alert('failed, ' + ex); }
         })
+    })
 
+    $(document).on('click', '.btn-delete', function () {
+        let $element = $(this);
+
+        $element.parent().find('.btn-cancel').hide()
+        $element.parent().find('.btn-delete').hide()
+        $element.parent().find('.btn-edit').show()
+
+        let noteid = $element.closest('.note-id').attr('data-note-id')
+        $.ajax({
+            url: `/note/delete/${noteid}`,
+            type: "DELETE",
+            success: function (data, status){
+                $('p').append('status: ' + status + ', data: ' + data)
+                $element.closest('.note-id').remove()
+            },
+            error: function(jqxhr, settings, ex) { alert('failed, ' + ex); }
+        })
     })
 
     $('.btn-add-new-note').on('click', function () {
