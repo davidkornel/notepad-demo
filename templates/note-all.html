@@ -98,29 +98,22 @@
     </div>
     <ol>
         {{ range .notes }}
-        <div class="col-12 mb-3">
+        <div class="col-8 mb-3">
             <div class="card note-id" data-note-id="{{ .NoteID }}">
                 <h2 class="card-header">{{ .Title }}</h2>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col rounded border" style="border: lightblue">
-                            <h5 class="col rounded mb-3" style="background-color: lightblue ">Current values</h5>
-                            <ul data-note-id="{{ .NoteID }}">
-                                <li>
-                                    Group: <span class="data-temp-current" >{{ .Group }}</span>
-                                    <span class="data-temp-current-text"></span>
-                                </li>
-                                <li>
-                                    Text: <label>
-                                    <textarea class="data-text" rows="2" cols="50"  disabled>{{ .Text }}</textarea>
-                                </label>
-                                </li>
-                            </ul>
-                            <button class="btn btn-primary btn-measurement-edit">Edit</button>
-                            <button class="btn btn-primary btn-measurement-save" style="display: none">Save</button>
-                            <button class="btn btn-primary btn-measurement-cancel" style="display: none">Cancel</button>
-                            <button class="btn btn-primary btn-measurement-delete" style="display: none">Delete</button>
-                        </div>
+                    <div class="col-6">
+                        <label> Group:
+                            <textarea class="data-group" rows="1" cols="50" maxlength="10"  disabled>{{ .Group }}</textarea>
+                        </label>
+                        <label> Text:
+                            <textarea class="data-text" rows="3" cols="50"  disabled>{{ .Text }}</textarea>
+                        </label>
+
+                        <button class="btn btn-primary btn-edit">Edit</button>
+                        <button class="btn btn-primary btn-cancel" style="display: none">Cancel</button>
+                        <button class="btn btn-primary btn-save" style="display: none">Save</button>
+                        <button class="btn btn-primary btn-delete" style="display: none">Delete</button>
                     </div>
                 </div>
             </div>
@@ -133,6 +126,10 @@
 
 <script>
 
+    // function editBtnclick() {
+    //
+    // }
+
     function openAddNotePopup() {
         document.getElementById("addNoteForm").style.display = "block"
     }
@@ -143,17 +140,68 @@
 
 
 $(() => {
-        $('.btn-measurement-edit').on('click', function () {
-            let $element = $(this);
+    $(document).on('click', '.btn-edit', function () {
+        let $element = $(this);
 
-            $element.parent().find('.display-edit').show()
-            $element.parent().find('.btn-measurement-save').show()
-            $element.parent().find('.btn-measurement-cancel').show()
-            $element.parent().find('.btn-measurement-delete').show()
-            $('.data-text').prop('disabled', false)
+        $element.parent().find('.btn-save').show()
+        $element.parent().find('.btn-cancel').show()
+        $element.parent().find('.btn-delete').show()
+        $element.parent().find('.data-text').prop('disabled', false)
+        $element.parent().find('.data-group').prop('disabled', false)
 
-            $element.hide();
+        $element.hide();
+    })
+
+    $(document).on('click', '.btn-cancel', function () {
+        let $element = $(this);
+
+        $element.parent().find('.btn-edit').show()
+        $element.parent().find('.btn-save').hide()
+        $element.parent().find('.btn-cancel').hide()
+        $element.parent().find('.btn-delete').hide()
+        $element.parent().find('.data-text').prop('disabled', true)
+        $element.parent().find('.data-group').prop('disabled', true)
+
+        $element.hide();
+    })
+
+    $(document).on('click', '.btn-save', function () {
+        let $element = $(this);
+
+        $element.parent().find('.btn-cancel').hide()
+        $element.parent().find('.btn-delete').hide()
+        $element.parent().find('.btn-edit').show()
+
+        let textValue = $element.parent().find('.data-text').val();
+        let groupValue = $element.parent().find('.data-group').val();
+        console.log("group "+  groupValue + " text " + textValue)
+        let noteid = $element.closest('.note-id').attr('data-note-id')
+        console.log("NoteID " + JSON.stringify(noteid) )
+        $.ajax({
+            url: `/note/edit/${noteid}`,
+            type: "POST",
+            data: JSON.stringify({
+                title: "",
+                group: groupValue,
+                text: textValue
+            }),
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            success: function (data, status){
+                $('p').append('status: ' + status + ', data: ' + data)
+                console.log(data)
+                $element.parent().find('.data-text').html(textValue);
+                $element.parent().find('.data-group').html(groupValue);
+            },
+            complete: function () {
+                $element.parent().find('.data-text').prop('disabled', true)
+                $element.parent().find('.data-group').prop('disabled', true)
+                $element.hide();
+            },
+            error: function(jqxhr, settings, ex) { alert('failed, ' + ex); }
         })
+
+    })
 
     $('.btn-add-new-note').on('click', function () {
             let $element = $(this);
@@ -182,29 +230,21 @@ $(() => {
                     console.log(data)
 
                     let newNoteHTML = `
-                        <div class="col-12 mb-3">
+                        <div class="col-8 mb-3">
                             <div class="card note-id" data-note-id="${data.noteid}">
                                 <h2 class="card-header">${data.title}</h2>
                                 <div class="card-body">
-                                    <div class="row">
-                                        <div class="col rounded border" style="border: lightblue">
-                                            <h5 class="col rounded mb-3" style="background-color: lightblue ">Current values</h5>
-                                            <ul data-note-id="${data.noteid}">
-                                                <li>
-                                                    Group: <span class="data-temp-current">${data.group}</span>
-                                                    <span class="data-temp-current-text"></span>
-                                                </li>
-                                                <li>
-                                                    Text: <label>
-                                                        <textarea class="data-text" rows="2" cols="50" disabled>${data.text}</textarea>
-                                                    </label>
-                                                </li>
-                                            </ul>
-                                            <button class="btn btn-primary btn-measurement-edit">Edit</button>
-                                            <button class="btn btn-primary btn-measurement-save" style="display: none">Save</button>
-                                            <button class="btn btn-primary btn-measurement-cancel" style="display: none">Cancel</button>
-                                            <button class="btn btn-primary btn-measurement-delete" style="display: none">Delete</button>
-                                        </div>
+                                    <div class="col-6">
+                                        <label> Group:
+                                            <textarea class="data-group" rows="1" cols="50" maxlength="10"  disabled>${data.group}</textarea>
+                                        </label>
+                                        <label> Text:
+                                            <textarea class="data-text" rows="3" cols="50"  disabled>${data.text}</textarea>
+                                        </label>
+                                        <button class="btn btn-primary btn-edit">Edit</button>
+                                        <button class="btn btn-primary btn-cancel" style="display: none">Cancel</button>
+                                        <button class="btn btn-primary btn-save" style="display: none">Save</button>
+                                        <button class="btn btn-primary btn-delete" style="display: none">Delete</button>
                                     </div>
                                 </div>
                             </div>
