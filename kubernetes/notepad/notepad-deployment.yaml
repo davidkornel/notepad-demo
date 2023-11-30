@@ -13,6 +13,9 @@ spec:
     metadata:
       labels:
         app: notepad
+      annotations:
+        prometheus.io/port: "6969"
+        prometheus.io/scrape: "true"
     spec:
       containers:
         - name: notepad
