@@ -9,4 +9,7 @@ var (
 
 	// DefaultDatabaseNoteCollectionName is the default database collection name for Notes
 	DefaultDatabaseNoteCollectionName = "notes"
+
+	// DefaultMonitoringPort is the default port on which we should expose the collected metrics
+	DefaultMonitoringPort = 2112
 )

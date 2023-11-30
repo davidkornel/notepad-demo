@@ -24,7 +24,7 @@ type RenderNote struct {
 	Text   string
 }
 
-func POSTData2Note(uuid uuid.UUID, data POSTData) Note {
+func postData2Note(uuid uuid.UUID, data POSTData) Note {
 	return Note{
 		NoteID: uuid,
 		Group:  data.Group,

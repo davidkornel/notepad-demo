@@ -1,6 +1,8 @@
 package note
 
 import (
+	"github.com/davidkornel/notepad-demo/config"
+	"github.com/davidkornel/notepad-demo/monitoring"
 	"github.com/davidkornel/notepad-demo/view"
 	"github.com/gin-gonic/gin"
 	"github.com/go-logr/logr"
@@ -10,14 +12,16 @@ import (
 )
 
 type Routes struct {
-	dbClient mongo.Client
-	logger   logr.Logger
+	coll    *mongo.Collection
+	metrics *monitoring.Metrics
+	logger  logr.Logger
 }
 
-func NewRoutes(l logr.Logger, client *mongo.Client) *Routes {
+func NewRoutes(l logr.Logger, metrics *monitoring.Metrics, client *mongo.Client) *Routes {
 	return &Routes{
-		dbClient: *client,
-		logger:   l,
+		coll:    client.Database(config.DefaultDatabaseTableName).Collection(config.DefaultDatabaseNoteCollectionName),
+		metrics: metrics,
+		logger:  l,
 	}
 }
 
@@ -38,6 +42,8 @@ func (r *Routes) RegisterRoutes(router *gin.Engine) {
 func (r *Routes) deleteNote(c *gin.Context) {
 	log := r.logger.WithName("deleteNote")
 
+	r.metrics.IncrementRequestTotal("/note/delete", c.Request.Method)
+
 	id, err := uuid.FromString(c.Param("id"))
 	if err != nil {
 		log.Error(err, "error happened while fetching id")
@@ -54,6 +60,8 @@ func (r *Routes) deleteNote(c *gin.Context) {
 func (r *Routes) editNote(c *gin.Context) {
 	log := r.logger.WithName("editNote")
 
+	r.metrics.IncrementRequestTotal("/note/edit", c.Request.Method)
+
 	id, err := uuid.FromString(c.Param("id"))
 	if err != nil {
 		log.Error(err, "error happened while fetching id")
@@ -67,7 +75,7 @@ func (r *Routes) editNote(c *gin.Context) {
 		return
 	}
 
-	note := POSTData2Note(id, noteData)
+	note := postData2Note(id, noteData)
 
 	err = r.editNoteInDB(note)
 	if err != nil {
@@ -85,6 +93,8 @@ func (r *Routes) editNote(c *gin.Context) {
 func (r *Routes) createNote(c *gin.Context) {
 	log := r.logger.WithName("createNote")
 
+	r.metrics.IncrementRequestTotal(c.Request.URL.Path, c.Request.Method)
+
 	var noteData POSTData
 
 	if err := c.ShouldBindJSON(&noteData); err != nil {
@@ -94,7 +104,7 @@ func (r *Routes) createNote(c *gin.Context) {
 
 	noteID := uuid.NewV4()
 
-	newNote := POSTData2Note(noteID, noteData)
+	newNote := postData2Note(noteID, noteData)
 	//saveNote
 	err := r.saveNoteIntoDB(newNote)
 	if err != nil {
@@ -111,6 +121,8 @@ func (r *Routes) createNote(c *gin.Context) {
 
 func (r *Routes) showAllNotes(c *gin.Context) {
 	log := r.logger.WithName("showAllNotes")
+
+	r.metrics.IncrementRequestTotal("/note/all", c.Request.Method)
 
 	var renderNotes []RenderNote
 

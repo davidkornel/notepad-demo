@@ -31,8 +31,8 @@ func (db *MongoDB) Connect2MongoDB() error {
 	return nil
 }
 
-func (db *MongoDB) CloseMongoDBConnection() {
-	if err := db.client.Disconnect(context.TODO()); err != nil {
+func (db *MongoDB) CloseMongoDBConnection(ctx context.Context) {
+	if err := db.client.Disconnect(ctx); err != nil {
 		panic(err)
 	}
 }

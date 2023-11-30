@@ -3,20 +3,20 @@ package note
 import (
 	"context"
 	"errors"
-	"github.com/davidkornel/notepad-demo/config"
 	uuid "github.com/satori/go.uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func (r *Routes) fetchAllNoteFromDB() []Note {
+	defer r.updateMetric(r.coll)
 	log := r.logger.WithName("fetchAllNoteFromDB")
 
 	var results []Note
 	log.Info("Trying to fetch all notes from database")
-	coll := r.dbClient.Database(config.DefaultDatabaseTableName).Collection(config.DefaultDatabaseNoteCollectionName)
 
-	cursor, err := coll.Find(context.TODO(), bson.D{})
+	cursor, err := r.coll.Find(context.TODO(), bson.D{})
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		log.Info("MongoDB table is empty, no document found")
 		return nil
@@ -31,12 +31,12 @@ func (r *Routes) fetchAllNoteFromDB() []Note {
 }
 
 func (r *Routes) saveNoteIntoDB(note Note) error {
+	defer r.updateMetric(r.coll)
 	log := r.logger.WithName("saveNoteIntoDB")
 
 	log.Info("Trying to save note into database", "note", note)
-	coll := r.dbClient.Database(config.DefaultDatabaseTableName).Collection(config.DefaultDatabaseNoteCollectionName)
 
-	_, err := coll.InsertOne(context.TODO(), note)
+	_, err := r.coll.InsertOne(context.TODO(), note)
 	if err != nil {
 		log.Error(err, "could not save")
 		return err
@@ -46,16 +46,16 @@ func (r *Routes) saveNoteIntoDB(note Note) error {
 }
 
 func (r *Routes) editNoteInDB(note Note) error {
+	defer r.updateMetric(r.coll)
 	log := r.logger.WithName("saveNoteIntoDB")
 
 	log.Info("Trying to save note into database", "note", note)
-	coll := r.dbClient.Database(config.DefaultDatabaseTableName).Collection(config.DefaultDatabaseNoteCollectionName)
 
 	update := bson.D{{"$set", bson.D{
 		{"text", note.Text},
 		{"group", note.Group},
 	}}}
-	result, err := coll.UpdateOne(context.TODO(), bson.D{{"noteid", note.NoteID}}, update)
+	result, err := r.coll.UpdateOne(context.TODO(), bson.D{{"noteid", note.NoteID}}, update)
 	if err != nil {
 		return err
 	}
@@ -71,17 +71,32 @@ func (r *Routes) editNoteInDB(note Note) error {
 }
 
 func (r *Routes) deleteNoteFromDB(id uuid.UUID) error {
+	defer r.updateMetric(r.coll)
 	log := r.logger.WithName("deleteNoteFromDB")
-
 	log.Info("Trying to delete note from database", "noteid", id.String())
-	coll := r.dbClient.Database(config.DefaultDatabaseTableName).Collection(config.DefaultDatabaseNoteCollectionName)
 
-	result, err := coll.DeleteOne(context.TODO(), bson.D{{"noteid", id}})
+	result, err := r.coll.DeleteOne(context.TODO(), bson.D{{"noteid", id}})
 	if err != nil {
 		return err
 	}
 	if result.DeletedCount == 1 {
 		log.V(1).Info("Successfully deleted note")
 	}
+	//r.updateMetric(coll)
 	return nil
+}
+
+func (r *Routes) updateMetric(coll *mongo.Collection) {
+	log := r.logger.WithName("updateMetric")
+
+	log.V(1).Info("Trying to get the number of notes")
+	//coll := r.dbClient.Database(config.DefaultDatabaseTableName).Collection(config.DefaultDatabaseNoteCollectionName)
+
+	opts := options.Count().SetHint("_id_")
+	count, err := coll.CountDocuments(context.TODO(), bson.D{}, opts)
+	if err != nil {
+		panic(err)
+	}
+	log.Info("Number of notes", "num", count)
+	r.metrics.SetNumberOfActiveNotes(count)
 }
