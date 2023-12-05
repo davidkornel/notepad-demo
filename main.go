@@ -21,7 +21,6 @@ func main() {
 	// parse cli flags
 	flag.StringVar(&mongoDBUri, "mongo-uri", config.DefaultMongoDBConnectionURI, "The mongodb uri to be used when connecting")
 	flag.IntVar(&monitoringPort, "monitoring-port", config.DefaultMonitoringPort, "The port used to expose the metrics")
-	flag.Parse()
 
 	// setup logging
 	opts := zap.Options{
@@ -35,7 +34,7 @@ func main() {
 
 	setupLog := logger.WithName("setupLog")
 
-	// gracful shutdown
+	// graceful shutdown
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
 

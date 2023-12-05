@@ -16,6 +16,7 @@ type Server struct {
 	metricServer *monitoring.MetricServer
 	mongoDB      *database.MongoDB
 	srv          *http.Server
+	Router       *gin.Engine
 }
 
 func NewGinServer(logger logr.Logger, metricServer *monitoring.MetricServer, db *database.MongoDB) *Server {
@@ -29,11 +30,11 @@ func NewGinServer(logger logr.Logger, metricServer *monitoring.MetricServer, db 
 func (s *Server) Start() {
 	log := s.logger.WithName("MetricServer")
 	log.Info("Starting MetricServer HTTP server")
-	router := gin.Default()
-	router.LoadHTMLGlob("templates/*.html")
-	router.Static("/assets", "./assets")
+	s.Router = gin.Default()
+	s.Router.LoadHTMLGlob("templates/*.html")
+	s.Router.Static("/assets", "./assets")
 
-	router.GET("/ping", func(c *gin.Context) {
+	s.Router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
@@ -41,11 +42,11 @@ func (s *Server) Start() {
 
 	noteRoute := note.NewRoutes(s.logger, s.metricServer.GetMetrics(), s.mongoDB.GetClient())
 
-	noteRoute.RegisterRoutes(router)
+	noteRoute.RegisterRoutes(s.Router)
 
 	s.srv = &http.Server{
 		Addr:    ":8080",
-		Handler: router,
+		Handler: s.Router,
 	}
 
 	go func() {

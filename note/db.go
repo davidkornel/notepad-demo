@@ -14,7 +14,7 @@ func (r *Routes) fetchAllNoteFromDB() []Note {
 	log := r.logger.WithName("fetchAllNoteFromDB")
 
 	var results []Note
-	log.Info("Trying to fetch all notes from database")
+	log.V(1).Info("Trying to fetch all notes from database")
 
 	cursor, err := r.coll.Find(context.TODO(), bson.D{})
 	if errors.Is(err, mongo.ErrNoDocuments) {
@@ -34,7 +34,7 @@ func (r *Routes) saveNoteIntoDB(note Note) error {
 	defer r.updateMetric(r.coll)
 	log := r.logger.WithName("saveNoteIntoDB")
 
-	log.Info("Trying to save note into database", "note", note)
+	log.V(1).Info("Trying to save note into database", "note", note)
 
 	_, err := r.coll.InsertOne(context.TODO(), note)
 	if err != nil {
@@ -49,7 +49,7 @@ func (r *Routes) editNoteInDB(note Note) error {
 	defer r.updateMetric(r.coll)
 	log := r.logger.WithName("saveNoteIntoDB")
 
-	log.Info("Trying to save note into database", "note", note)
+	log.V(1).Info("Trying to save note into database", "note", note)
 
 	update := bson.D{{"$set", bson.D{
 		{"text", note.Text},
@@ -73,7 +73,7 @@ func (r *Routes) editNoteInDB(note Note) error {
 func (r *Routes) deleteNoteFromDB(id uuid.UUID) error {
 	defer r.updateMetric(r.coll)
 	log := r.logger.WithName("deleteNoteFromDB")
-	log.Info("Trying to delete note from database", "noteid", id.String())
+	log.V(1).Info("Trying to delete note from database", "noteid", id.String())
 
 	result, err := r.coll.DeleteOne(context.TODO(), bson.D{{"noteid", id}})
 	if err != nil {
@@ -90,13 +90,12 @@ func (r *Routes) updateMetric(coll *mongo.Collection) {
 	log := r.logger.WithName("updateMetric")
 
 	log.V(1).Info("Trying to get the number of notes")
-	//coll := r.dbClient.Database(config.DefaultDatabaseTableName).Collection(config.DefaultDatabaseNoteCollectionName)
 
 	opts := options.Count().SetHint("_id_")
 	count, err := coll.CountDocuments(context.TODO(), bson.D{}, opts)
 	if err != nil {
 		panic(err)
 	}
-	log.Info("Number of notes", "num", count)
+	log.V(1).Info("Number of notes", "num", count)
 	r.metrics.SetNumberOfActiveNotes(count)
 }

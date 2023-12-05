@@ -48,13 +48,16 @@ func (r *Routes) deleteNote(c *gin.Context) {
 	if err != nil {
 		log.Error(err, "error happened while fetching id")
 	}
-	log.Info("NoteID fetched from url", "noteid", id.String())
+	log.V(1).Info("NoteID fetched from url", "noteid", id.String())
 	log.V(1).Info("Trying to delete note", "noteid", id.String())
 
 	if err = r.deleteNoteFromDB(id); err != nil {
 		log.Error(err, "error happened while updating note in DB")
 		return
 	}
+	log.V(1).Info("Successfully deleted note", "id", id.String())
+	log.Info("Route served successfully", "route", "/note/delete/"+id.String())
+
 }
 
 func (r *Routes) editNote(c *gin.Context) {
@@ -82,12 +85,14 @@ func (r *Routes) editNote(c *gin.Context) {
 		log.Error(err, "error happened while updating note in DB")
 		return
 	}
-	log.Info("Successfully updated note", "id", note.NoteID.String())
+
 	payload := note2Map(note)
 
 	view.Render(c, gin.H{
 		"payload": payload,
 	}, "")
+	log.V(1).Info("Successfully updated note", "id", note.NoteID.String())
+	log.Info("Route served successfully", "route", "/note/edit/"+note.NoteID.String())
 }
 
 func (r *Routes) createNote(c *gin.Context) {
@@ -116,7 +121,8 @@ func (r *Routes) createNote(c *gin.Context) {
 	view.Render(c, gin.H{
 		"payload": payload,
 	}, "")
-	log.Info("new note received", "note", payload)
+	log.V(1).Info("New note received", "note", payload)
+	log.Info("Route served successfully", "route", "/note/create")
 }
 
 func (r *Routes) showAllNotes(c *gin.Context) {
@@ -140,4 +146,5 @@ func (r *Routes) showAllNotes(c *gin.Context) {
 		"notes": renderNotes,
 	}, "note-all.html")
 	log.V(1).Info("Notes have been fetched", "notes", renderNotes)
+	log.Info("Route served successfully", "route", "/note/all")
 }

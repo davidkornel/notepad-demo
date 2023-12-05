@@ -14,7 +14,7 @@ spec:
       labels:
         app: notepad
       annotations:
-        prometheus.io/port: "6969"
+        prometheus.io/port: "2112"
         prometheus.io/scrape: "true"
     spec:
       containers:
@@ -27,4 +27,4 @@ spec:
             - /notepad
           args:
             - "--mongo-uri=mongodb://mongo.default.svc:27017"
-            - "--monitoring-port=6969"
+            - "--monitoring-port=2112"
